@@ -11,36 +11,31 @@ const useNFCReader = (setCardId) => {
 
                 ndef.onreading = (event) => {
                     console.log("🔍 Evento NFC Detectado:", event);
+
+                    if (!event.message || event.message.records.length === 0) {
+                        console.warn("⚠️ Tarjeta no tiene datos en formato NDEF.");
+                        setCardId("⚠️ Tarjeta no compatible con NDEF");
+                        return;
+                    }
+
                     const decoder = new TextDecoder();
-
                     for (const record of event.message.records) {
-                        console.log("📡 Registro NFC:", record);
+                        let cardId;
 
-                        let cardId = null;
-
-                        try {
-                            if (record.data instanceof DataView) {
-                                console.log("📄 DataView detectado");
-                                const buffer = new Uint8Array(record.data.buffer);
-                                cardId = decoder.decode(buffer);
-                            } else if (record.data instanceof ArrayBuffer) {
-                                console.log("🔵 ArrayBuffer detectado");
-                                cardId = decoder.decode(new Uint8Array(record.data));
-                            } else {
-                                console.log("⚠️ Formato desconocido de datos NFC:", record.data);
-                                cardId = String(record.data);
-                            }
-
-                            console.log("✅ Tarjeta detectada:", cardId);
-                            setCardId(cardId); // Actualiza el estado en App.js
-                        } catch (error) {
-                            console.error("❌ Error al decodificar NFC:", error, record);
+                        if (record.data instanceof DataView) {
+                            const buffer = new Uint8Array(record.data.buffer);
+                            cardId = decoder.decode(buffer);
+                        } else {
+                            cardId = decoder.decode(record.data);
                         }
+
+                        console.log("✅ Tarjeta detectada:", cardId);
+                        setCardId(cardId || "⚠️ Tarjeta vacía o formato desconocido");
                     }
                 };
-            }).catch((error) => console.error("❌ Error al escanear NFC:", error));
+            }).catch((error) => console.error("Error al escanear NFC:", error));
         } else {
-            console.log("❌ Tu navegador no soporta NFC.");
+            console.log("⚠️ Tu navegador no soporta NFC.");
         }
     }, [setCardId]);
 };
