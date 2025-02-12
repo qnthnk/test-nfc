@@ -15,15 +15,24 @@ const useNFCReader = (setCardId) => {
                     for (const record of event.message.records) {
                         let cardId;
 
-                        if (record.data instanceof DataView) {
-                            const buffer = new Uint8Array(record.data.buffer);
-                            cardId = decoder.decode(buffer);
-                        } else {
-                            cardId = decoder.decode(record.data);
+                        try {
+                            if (record.data instanceof DataView) {
+                                // Convertimos a Uint8Array para decodificar
+                                const buffer = new Uint8Array(record.data.buffer);
+                                cardId = decoder.decode(buffer);
+                            } else if (record.data instanceof ArrayBuffer) {
+                                // Si ya es un ArrayBuffer, lo usamos directamente
+                                cardId = decoder.decode(new Uint8Array(record.data));
+                            } else {
+                                // Si no es un formato esperado, lo convertimos a string manualmente
+                                cardId = String(record.data);
+                            }
+                            
+                            console.log("Tarjeta detectada:", cardId);
+                            setCardId(cardId); // Actualiza el estado en App.js
+                        } catch (error) {
+                            console.error("Error al decodificar NFC:", error, record);
                         }
-
-                        console.log("Tarjeta detectada:", cardId);
-                        setCardId(cardId); // Actualiza el estado en App.js
                     }
                 };
             }).catch((error) => console.error("Error al escanear NFC:", error));
