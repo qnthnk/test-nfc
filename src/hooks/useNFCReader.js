@@ -1,8 +1,9 @@
+/* global NDEFReader */
 import { useEffect } from "react";
 
 const useNFCReader = (setCardId) => {
     useEffect(() => {
-        if ("NDEFReader" in window) {
+        if (typeof window !== "undefined" && "NDEFReader" in window) {
             const ndef = new NDEFReader();
 
             ndef.scan().then(() => {
