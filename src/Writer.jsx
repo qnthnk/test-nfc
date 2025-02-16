@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import useNFCWriter from "./src/hooks/useNFCWriter";
+import useNFCWriter from "./hooks/useNFCWriter";
 
 const Writer = () => {
   const [textToWrite, setTextToWrite] = useState("");
